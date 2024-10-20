@@ -10,6 +10,8 @@ import {
 } from 'recharts';
 import './Aggregations.css'; // Optional: For styling
 
+const API_BASE_URL = process.env.REACT_APP_API_URL;
+
 function Aggregations() {
   const [aggregations, setAggregations] = useState([]);
   const [groupByField, setGroupByField] = useState('bidder');
@@ -24,9 +26,8 @@ function Aggregations() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(
-        `http://localhost:8000/preconfs/aggregations?group_by_field=${groupByField}`
-      );
+      const response = `${API_BASE_URL}/preconfs/aggregations?group_by_field=${groupByField}`;
+
       if (!response.ok) {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }

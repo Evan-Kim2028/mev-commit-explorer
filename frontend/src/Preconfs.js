@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import './Preconfs.css';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL;
+
 function Preconfs() {
   const [preconfs, setPreconfs] = useState([]);
   const [selectedPreconf, setSelectedPreconf] = useState(null);
@@ -17,7 +19,7 @@ function Preconfs() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:8000/preconfs?page=1&limit=10');
+      const response = await fetch(`${API_BASE_URL}/preconfs?page=1&limit=10`);
       if (!response.ok) {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
