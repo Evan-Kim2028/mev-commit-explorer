@@ -11,7 +11,7 @@ dependencies = [
     "uvicorn>=0.32.0",
     "duckdb>=1.1.2",
     "pyarrow>=17.0.0",
-    "fastapi-cors>=0.0.6"
+    "fastapi-cors>=0.0.6",
     "requests>=2.26.0"
 ]
 readme = "README.md"
