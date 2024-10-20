@@ -1,0 +1,1 @@
+This is a shared file between backend/db folders to have a centralized locking service for duckdb.

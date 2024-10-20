@@ -1,0 +1,21 @@
+.Aggregations {
+    padding: 20px;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    color: #282c34;
+  }
+  
+  .controls {
+    margin-bottom: 20px;
+  }
+  
+  .controls label {
+    margin-right: 10px;
+    font-weight: bold;
+  }
+  
+  .controls select {
+    padding: 5px;
+    font-size: 16px;
+  }

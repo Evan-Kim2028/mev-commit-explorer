@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  db:
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    volumes:
+      - ./db/data:/app/db/data    
+      - ./common:/app/common        
+    environment:
+      - DATABASE_URL=/app/db/data/mev_commit.duckdb
+      - PYTHONPATH=/app/common    
+    command: sh -c "python pipe/query_commits.py"
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app/backend     
+      - ./db/data:/app/db/data     
+      - ./common:/app/common     
+    environment:
+      - DATABASE_URL=/app/db/data/mev_commit.duckdb
+      - PYTHONPATH=/app/common   
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/usr/src/app
+    environment:
+      - REACT_APP_API_URL=http://backend:8000
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
