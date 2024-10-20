@@ -26,8 +26,10 @@ function Aggregations() {
     setLoading(true);
     setError(null);
     try {
-      const response = `${API_BASE_URL}/preconfs/aggregations?group_by_field=${groupByField}`;
-
+      const response = await fetch(
+        `${API_BASE_URL}/preconfs/aggregations?group_by_field=${groupByField}`
+      );
+  
       if (!response.ok) {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
