@@ -115,7 +115,10 @@ def get_latest_block_number(
     # Acquire lock before accessing DuckDB
     lockfile = acquire_lock(LOCKFILE_PATH)
     try:
-        conn = duckdb.connect(db_filename, read_only=True)
+        if os.path.exists(db_filename):
+            conn = duckdb.connect(db_filename, read_only=True)
+        else:
+            conn = duckdb.connect(db_filename)
 
         # Check if the table exists
         table_exists = conn.execute(
