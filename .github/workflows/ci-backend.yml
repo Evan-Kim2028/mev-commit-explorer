@@ -18,7 +18,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.11, 3.12]
+        python-version: [3.12]
 
     steps:
       # Step 1: Checkout the repository
@@ -28,7 +28,7 @@ jobs:
       # Step 2: Install Rye
       - name: Install Rye
         run: |
-          curl -sSL https://rye-up.com/install.sh | bash
+          curl -sSf https://rye.astral.sh/get | bash
           echo "$HOME/.local/bin" >> $GITHUB_PATH  # Add Rye to PATH
 
       # Step 3: Set up Python environment with Rye
