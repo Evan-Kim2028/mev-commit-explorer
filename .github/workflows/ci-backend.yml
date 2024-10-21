@@ -28,7 +28,7 @@ jobs:
       # Step 2: Install Rye
       - name: Install Rye
         run: |
-          curl -sSf https://rye.astral.sh/get | bash
+          curl -sSf https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash
           echo "$HOME/.local/bin" >> $GITHUB_PATH  # Add Rye to PATH
 
       # Step 3: Set up Python environment with Rye
