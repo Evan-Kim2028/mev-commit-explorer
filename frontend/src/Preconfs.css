@@ -1,45 +1,92 @@
 /* frontend/src/Preconfs.css */
 
+:root {
+  --color-background: #0e131a;
+  --color-text: #fff;
+  --color-primary: #E97D25;
+  --color-secondary: #2c3e50;
+  --color-primary-hover: #e99149;
+  --color-secondary-hover: #3a506b;
+  --color-selected: #4a5d7d;
+  --color-details: #1e2a3a;
+  --color-code-background: #0d1b2a;
+  --color-border: #0e131a;
+}
+
 .Preconfs {
   padding: 20px;
   max-width: 100%;
   margin: 0 auto;
-  color: #fff;
+  color: var(--color-text);
+}
+
+.table-container {
+  overflow-x: auto;
 }
 
 .preconfs-table {
-  width: 100%;
   border-collapse: collapse;
-  overflow-x: auto;
+  width: 100%;
+  color: var(--color-text);
+}
+
+.preconfs-table th {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  color: var(--color-text);
+  background-color: var(--color-primary);
+  transition: background-color 0.3s ease;
+}
+
+.preconfs-table th:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.preconfs-table th::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background-color: var(--color-primary);
+  cursor: col-resize;
 }
 
 .preconfs-table th,
 .preconfs-table td {
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   padding: 8px;
-  text-align: left;
-  font-size: 14px;
-  white-space: nowrap; 
+  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; 
+  text-overflow: ellipsis;
 }
 
-.preconfs-table th {
-  background-color: #E97D25;
-  color: #282c34;
-  position: sticky;
-  top: 0;
-  z-index: 1;
+.preconfs-table tr:not(.details-row):nth-child(odd) {
+  background-color: var(--color-background);
+}
+
+.preconfs-table tr:not(.details-row):nth-child(even) {
+  background-color: var(--color-secondary);
 }
 
 .preconfs-table tr:hover {
-  background-color: #f1f1f1;
+  background-color: var(--color-secondary-hover);
+}
+
+.preconfs-table tr:not(.details-row):hover {
+  background-color: var(--color-secondary-hover);
   cursor: pointer;
 }
 
+.preconfs-table tr.selected {
+  background-color: var(--color-selected);
+}
+
 .details-row pre {
-  background-color: #333;
-  color: #fff;
+  background-color: var(--color-code-background);
+  color: var(--color-text);
   padding: 10px;
   margin: 0;
   white-space: pre-wrap;
@@ -48,4 +95,8 @@
   overflow-x: auto;
   max-height: 200px;
   overflow-y: auto;
+}
+
+.preconfs-table tr.details-row {
+  background-color: var(--color-details);
 }
