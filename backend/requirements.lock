@@ -13,30 +13,72 @@
 annotated-types==0.7.0
     # via pydantic
 anyio==4.6.2.post1
+    # via httpx
     # via starlette
+certifi==2024.8.30
+    # via httpcore
+    # via httpx
+    # via requests
+charset-normalizer==3.4.0
+    # via requests
 click==8.1.7
     # via uvicorn
 duckdb==1.1.2
     # via backend-api
+environs==11.0.0
+    # via fastapi-cors
 fastapi==0.115.2
     # via backend-api
+    # via fastapi-cors
+fastapi-cors==0.0.6
+    # via backend-api
 h11==0.14.0
+    # via httpcore
     # via uvicorn
+httpcore==1.0.6
+    # via httpx
+httpx==0.27.2
+    # via backend-api
 idna==3.10
     # via anyio
+    # via httpx
+    # via requests
+iniconfig==2.0.0
+    # via pytest
+marshmallow==3.23.0
+    # via environs
+numpy==2.1.2
+    # via pyarrow
+packaging==24.1
+    # via marshmallow
+    # via pytest
+pluggy==1.5.0
+    # via pytest
 polars==1.9.0
     # via backend-api
+pyarrow==17.0.0
+    # via backend-api
 pydantic==2.9.2
+    # via backend-api
     # via fastapi
 pydantic-core==2.23.4
     # via pydantic
+pytest==8.3.3
+    # via backend-api
+python-dotenv==1.0.1
+    # via environs
+requests==2.32.3
+    # via backend-api
 sniffio==1.3.1
     # via anyio
+    # via httpx
 starlette==0.40.0
     # via fastapi
 typing-extensions==4.12.2
     # via fastapi
     # via pydantic
     # via pydantic-core
+urllib3==2.2.3
+    # via requests
 uvicorn==0.32.0
     # via backend-api

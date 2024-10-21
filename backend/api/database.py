@@ -4,7 +4,7 @@ import os
 import duckdb
 import polars as pl
 import logging
-from typing import Optional
+from typing import Dict, List, Optional
 from db_lock import acquire_lock, release_lock  # Import the locking functions
 from fastapi import HTTPException  # Only import HTTPException for error handling
 
@@ -140,3 +140,51 @@ def get_commitments(
     except Exception as e:
         logger.error(f"Error retrieving commitments: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+def get_table_schema(table_name: str) -> List[Dict[str, str]]:
+    """
+    Retrieve the schema of the specified table.
+
+    Args:
+        table_name (str): Name of the table whose schema is to be retrieved.
+
+    Returns:
+        List[Dict[str, str]]: A list of dictionaries containing column names and their data types.
+    """
+    try:
+        # Acquire lock before accessing DuckDB
+        lockfile = acquire_lock()
+        conn = get_db_connection()
+
+        # Use DuckDB's information_schema to get column details
+        query = f"""
+        SELECT column_name, data_type
+        FROM information_schema.columns
+        WHERE table_name = '{table_name}'
+        ORDER BY ordinal_position
+        """
+
+        result = conn.execute(query).fetchall()
+        conn.close()
+
+        if not result:
+            logger.error(f"Table '{table_name}' does not exist.")
+            raise HTTPException(
+                status_code=404, detail=f"Table '{table_name}' not found."
+            )
+
+        # Format the schema as a list of dictionaries
+        schema = [{"column_name": row[0], "data_type": row[1]} for row in result]
+        return schema
+
+    except HTTPException as he:
+        raise he  # Re-raise HTTP exceptions
+
+    except Exception as e:
+        logger.error(f"Error retrieving schema for table '{table_name}': {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+    finally:
+        # Release the lock after operation is done
+        release_lock(lockfile)
