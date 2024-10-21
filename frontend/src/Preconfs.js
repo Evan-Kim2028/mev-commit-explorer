@@ -1,15 +1,18 @@
 // frontend/src/Preconfs.js
 
-import React, { useState, useEffect } from 'react';
-import './Preconfs.css';
+import React, { useState, useEffect } from "react";
+import "./Preconfs.css";
+import testData from "./testData.json";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 function Preconfs() {
-  const [preconfs, setPreconfs] = useState([]);
+  const [preconfs, setPreconfs] = useState(testData.data);
   const [selectedPreconf, setSelectedPreconf] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortDirection, setSortDirection] = useState("asc");
 
   useEffect(() => {
     fetchPreconfs();
@@ -36,45 +39,65 @@ function Preconfs() {
     setSelectedPreconf(preconf === selectedPreconf ? null : preconf);
   };
 
-  const truncateText = (text, length = 10) => {
-    return text.length > length ? `${text.slice(0, length)}...` : text;
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+
+    const sortedPreconfs = [...preconfs].sort((a, b) => {
+      if (a[column] < b[column]) return sortDirection === "asc" ? -1 : 1;
+      if (a[column] > b[column]) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setPreconfs(sortedPreconfs);
   };
 
   return (
     <div className="Preconfs">
       <h2>Preconfs Data</h2>
       {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
       {!loading && !error && (
-        <table className="preconfs-table">
-          <thead>
-            <tr>
-              <th>Bidder</th>
-              <th>Committer</th>
-              <th>Bid Amount</th>
-              <th>L1 Block Number</th>
-            </tr>
-          </thead>
-          <tbody>
-            {preconfs.map((preconf) => (
-              <React.Fragment key={preconf.commitmentIndex}>
-                <tr onDoubleClick={() => handleRowClick(preconf)}>
-                  <td title={preconf.bidder}>{truncateText(preconf.bidder, 12)}</td>
-                  <td title={preconf.committer}>{truncateText(preconf.committer, 12)}</td>
-                  <td>{preconf.bid}</td>
-                  <td>{preconf.block_number_l1}</td>
-                </tr>
-                {selectedPreconf === preconf && (
-                  <tr className="details-row">
-                    <td colSpan="4">
-                      <pre>{JSON.stringify(preconf, null, 2)}</pre>
-                    </td>
+        <div className="table-container">
+          <table className="preconfs-table">
+            <thead>
+              <tr>
+                <th onClick={() => handleSort("bidder")}>Bidder</th>
+                <th onClick={() => handleSort("committer")}>Committer</th>
+                <th onClick={() => handleSort("bid")}>Bid Amount</th>
+                <th onClick={() => handleSort("block_number_l1")}>
+                  L1 Block Number
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {preconfs.map((preconf) => (
+                <React.Fragment key={preconf.commitmentIndex}>
+                  <tr
+                    onClick={() => handleRowClick(preconf)}
+                    className={selectedPreconf === preconf ? "selected" : ""}
+                  >
+                    <td>{preconf.bidder}</td>
+                    <td>{preconf.committer}</td>
+                    <td>{preconf.bid}</td>
+                    <td>{preconf.block_number_l1}</td>
                   </tr>
-                )}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
+                  {selectedPreconf === preconf && (
+                    <tr className="details-row">
+                      <td colSpan="4">
+                        <pre>{JSON.stringify(preconf, null, 2)}</pre>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
