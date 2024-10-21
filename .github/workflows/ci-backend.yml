@@ -6,9 +6,11 @@ on:
   push:
     paths:
       - 'backend/**'
+      - '.github/workflows/**'
   pull_request:
     paths:
       - 'backend/**'
+      - '.github/workflows/**'
 
 jobs:
   build-and-test:
@@ -16,35 +18,50 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.12]
+        python-version: [3.11, 3.12]
 
     steps:
       # Step 1: Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Python environment with pip caching
+      # Step 2: Install Rye
+      - name: Install Rye
+        run: |
+          curl -sSL https://rye-up.com/install.sh | bash
+          echo "$HOME/.local/bin" >> $GITHUB_PATH  # Add Rye to PATH
+
+      # Step 3: Set up Python environment with Rye
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        run: |
+          rye env install python=${{ matrix.python-version }}
+
+      # Step 4: Cache Rye dependencies
+      - name: Cache Rye dependencies
+        uses: actions/cache@v3
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'pip'  # Enables pip caching
+          path: ~/.cache/rye
+          key: ${{ runner.os }}-rye-${{ hashFiles('backend/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-rye-
 
-      # Step 3: Install dependencies
-      - name: Install Dependencies
+      # Step 5: Install dependencies using Rye
+      - name: Install Dependencies with Rye
         working-directory: backend
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.lock
+          rye sync
 
-      # Step 4: Run Linting with ruff
-      - name: Lint with ruff
-        working-directory: backend
-        run: |
-          ruff check api tests
+      # Step 6: Cache pip dependencies
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-      # Step 5: Run Tests with Pytest and Coverage
+      # Step 7: Run Tests with Pytest using Rye
       - name: Run Pytest
         working-directory: backend
         run: |
-          pytest --cov=api --cov=tests --cov-report=xml
+          rye run pytest --cov=api --cov=tests --cov-report=xml
