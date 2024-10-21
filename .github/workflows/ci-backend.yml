@@ -14,7 +14,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-22.04  # Specify the Ubuntu version explicitly
+    runs-on: ubuntu-22.04 
 
     strategy:
       matrix:
@@ -31,36 +31,13 @@ jobs:
           curl -sSf https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash
           echo "$HOME/.local/bin" >> $GITHUB_PATH  # Add Rye to PATH
 
-      # Step 3: Set up Python environment with Rye
-      - name: Set up Python ${{ matrix.python-version }}
-        run: |
-          rye env install python=${{ matrix.python-version }}
-
-      # Step 4: Cache Rye dependencies
-      - name: Cache Rye dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/rye
-          key: ${{ runner.os }}-rye-${{ hashFiles('backend/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-rye-
-
-      # Step 5: Install dependencies using Rye
+      # Step 3: Install dependencies using Rye
       - name: Install Dependencies with Rye
         working-directory: backend
         run: |
           rye sync
 
-      # Step 6: Cache pip dependencies
-      - name: Cache pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      # Step 7: Run Tests with Pytest using Rye
+      # Step 4: Run Tests with Pytest using Rye
       - name: Run Pytest
         working-directory: backend
         run: |
