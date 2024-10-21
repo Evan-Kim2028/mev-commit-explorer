@@ -1,3 +1,4 @@
+FROM ubuntu:22.04
 # Stage 1: Build the React app
 FROM node:18-alpine AS build
 
