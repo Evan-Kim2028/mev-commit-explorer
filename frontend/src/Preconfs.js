@@ -1,5 +1,3 @@
-// frontend/src/Preconfs.js
-
 import React, { useState, useEffect } from "react";
 import "./Preconfs.css";
 
@@ -12,16 +10,21 @@ function Preconfs() {
   const [error, setError] = useState(null);
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     fetchPreconfs();
+    // eslint-disable-next-line
   }, []);
 
-  const fetchPreconfs = async () => {
+  const fetchPreconfs = async (params = {}) => {
     setLoading(true);
     setError(null);
+    setIsSearching(Object.keys(params).length > 0);
     try {
-      const response = await fetch(`${API_BASE_URL}/preconfs?page=1&limit=10`);
+      const queryParams = new URLSearchParams(params);
+      const response = await fetch(`${API_BASE_URL}/preconfs?${queryParams.toString()}`);
       if (!response.ok) {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
@@ -29,6 +32,7 @@ function Preconfs() {
       setPreconfs(data.data);
     } catch (err) {
       setError(err.message);
+      setPreconfs([]);
     } finally {
       setLoading(false);
     }
@@ -39,37 +43,89 @@ function Preconfs() {
   };
 
   const handleSort = (column) => {
+    let newSortDirection = "asc";
     if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortColumn(column);
-      setSortDirection("asc");
+      newSortDirection = sortDirection === "asc" ? "desc" : "asc";
     }
+    setSortColumn(column);
+    setSortDirection(newSortDirection);
 
     const sortedPreconfs = [...preconfs].sort((a, b) => {
-      if (a[column] < b[column]) return sortDirection === "asc" ? -1 : 1;
-      if (a[column] > b[column]) return sortDirection === "asc" ? 1 : -1;
+      if (a[column] < b[column]) return newSortDirection === "asc" ? -1 : 1;
+      if (a[column] > b[column]) return newSortDirection === "asc" ? 1 : -1;
       return 0;
     });
 
     setPreconfs(sortedPreconfs);
   };
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const trimmedQuery = searchQuery.trim();
+
+    if (!trimmedQuery) {
+      // If search query is empty, fetch default preconfs
+      fetchPreconfs();
+      return;
+    }
+
+    // Determine if the query is a hash or a block number
+    const isHash = /^0x[a-fA-F0-9]{64}$/.test(trimmedQuery);
+    const isBlockNumber = /^\d+$/.test(trimmedQuery);
+
+    if (isHash) {
+      fetchPreconfs({ hash: trimmedQuery });
+    } else if (isBlockNumber) {
+      fetchPreconfs({ block_number_l1: trimmedQuery });
+    } else {
+      setError("Invalid search query. Please enter a valid hash or block number.");
+      setPreconfs([]);
+    }
+  };
+
   return (
     <div className="Preconfs">
-      <h2>Preconfs Data</h2>
+      <form onSubmit={handleSearchSubmit} className="search-form">
+        <input
+          type="text"
+          placeholder="Search by Preconf Bid Hash or L1 Block Number"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="search-input"
+        />
+        <button type="submit" className="search-button">Search</button>
+        {isSearching && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearchQuery("");
+              fetchPreconfs();
+            }}
+            className="clear-button"
+          >
+            Clear
+          </button>
+        )}
+      </form>
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {!loading && !error && (
+      {!loading && !error && preconfs.length === 0 && <p>No results found.</p>}
+      {!loading && !error && preconfs.length > 0 && (
         <div className="table-container">
           <table className="preconfs-table">
             <thead>
               <tr>
-                <th onClick={() => handleSort("bidder")}>Bidder</th>
-                <th onClick={() => handleSort("committer")}>Committer</th>
-                <th onClick={() => handleSort("bid")}>Bid Amount</th>
+                <th onClick={() => handleSort("bidder")}>
+                  Bidder {sortColumn === "bidder" ? (sortDirection === "asc" ? "↑" : "↓") : ""}
+                </th>
+                <th onClick={() => handleSort("committer")}>
+                  Committer {sortColumn === "committer" ? (sortDirection === "asc" ? "↑" : "↓") : ""}
+                </th>
+                <th onClick={() => handleSort("bid")}>
+                  Bid Amount {sortColumn === "bid" ? (sortDirection === "asc" ? "↑" : "↓") : ""}
+                </th>
                 <th onClick={() => handleSort("block_number_l1")}>
-                  L1 Block Number
+                  L1 Block Number {sortColumn === "block_number_l1" ? (sortDirection === "asc" ? "↑" : "↓") : ""}
                 </th>
               </tr>
             </thead>
