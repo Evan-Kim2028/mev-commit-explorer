@@ -1,5 +1,3 @@
-# .github/workflows/ci-backend.yml
-
 name: CI Backend
 
 on:
@@ -29,15 +27,38 @@ jobs:
       - name: Install Rye
         run: |
           curl -sSf https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash
-          echo "$HOME/.local/bin" >> $GITHUB_PATH  # Add Rye to PATH
 
-      # Step 3: Install dependencies using Rye
+      # Step 3: Add Rye to PATH
+      - name: Add Rye to PATH
+        run: |
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      # Step 4: Verify Rye Installation (Optional but recommended)
+      - name: Verify Rye Installation
+        run: rye --version
+
+      # Step 5: Cache Rye Dependencies (Optional but recommended)
+      - name: Cache Rye Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/rye
+          key: ${{ runner.os }}-rye-${{ hashFiles('backend/rye.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-rye-
+
+      # Step 6: Install dependencies using Rye
       - name: Install Dependencies with Rye
         working-directory: backend
         run: |
           rye sync
 
-      # Step 4: Run Tests with Pytest using Rye
+      # Step 7: Verify Python and Rye Versions (Optional but recommended)
+      - name: Verify Python and Rye Versions
+        run: |
+          python --version
+          rye --version
+
+      # Step 8: Run Tests with Pytest using Rye
       - name: Run Pytest
         working-directory: backend
         run: |
