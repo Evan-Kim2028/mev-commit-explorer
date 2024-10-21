@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import "./Preconfs.css";
-import testData from "./testData.json";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 function Preconfs() {
-  const [preconfs, setPreconfs] = useState(testData.data);
+  const [preconfs, setPreconfs] = useState([]);
   const [selectedPreconf, setSelectedPreconf] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
