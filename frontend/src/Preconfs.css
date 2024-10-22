@@ -1,133 +1,175 @@
-/* frontend/src/Preconfs.css */
+/* Preconfs.css */
 
-:root {
-  --color-background: #0e131a;
-  --color-text: #fff;
-  --color-primary: #E97D25;
-  --color-secondary: #2c3e50;
-  --color-primary-hover: #e99149;
-  --color-secondary-hover: #3a506b;
-  --color-selected: #4a5d7d;
-  --color-details: #1e2a3a;
-  --color-code-background: #0d1b2a;
-  --color-border: #0e131a;
-}
-
-.Preconfs {
+.Explorer {
   padding: 20px;
-  max-width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
-  color: var(--color-text);
-}
-
-.table-container {
-  overflow-x: auto;
-}
-
-.preconfs-table {
-  border-collapse: collapse;
-  width: 100%;
-  color: var(--color-text);
-}
-
-.preconfs-table th {
-  cursor: pointer;
-  user-select: none;
-  position: relative;
-  color: var(--color-text);
-  background-color: var(--color-primary);
-  transition: background-color 0.3s ease;
-}
-
-.preconfs-table th:hover {
-  background-color: var(--color-primary-hover);
-}
-
-.preconfs-table th::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 5px;
-  background-color: var(--color-primary);
-  cursor: col-resize;
-}
-
-.preconfs-table th,
-.preconfs-table td {
-  border: 1px solid var(--color-border);
-  padding: 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.preconfs-table tr:not(.details-row):nth-child(odd) {
-  background-color: var(--color-background);
-}
-
-.preconfs-table tr:not(.details-row):nth-child(even) {
-  background-color: var(--color-secondary);
-}
-
-.preconfs-table tr:hover {
-  background-color: var(--color-secondary-hover);
-}
-
-.preconfs-table tr:not(.details-row):hover {
-  background-color: var(--color-secondary-hover);
-  cursor: pointer;
-}
-
-.preconfs-table tr.selected {
-  background-color: var(--color-selected);
-}
-
-.details-row pre {
-  background-color: var(--color-code-background);
-  color: var(--color-text);
-  padding: 10px;
-  margin: 0;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  font-size: 12px;
-  overflow-x: auto;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.preconfs-table tr.details-row {
-  background-color: var(--color-details);
+  font-family: Arial, sans-serif;
 }
 
 .search-form {
   display: flex;
-  justify-content: center;
+  gap: 8px;
   margin-bottom: 20px;
 }
 
 .search-input {
-  width: 60%;
+  flex: 1;
   padding: 10px;
-  font-size: 16px;
-  border: 1px solid var(--color-border);
-  border-radius: 5px;
-  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 .search-button,
 .clear-button {
-  background-color: var(--color-primary);
-  color: var(--color-text);
+  padding: 10px 16px;
   border: none;
-  padding: 10px 20px;
-  font-size: 16px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-weight: bold;
 }
 
-.search-button:hover,
+.search-button {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.search-button:hover {
+  background-color: #218838;
+}
+
+.clear-button {
+  background-color: #dc3545;
+  color: #fff;
+}
+
 .clear-button:hover {
-  background-color: var(--color-primary-hover);
+  background-color: #c82333;
+}
+
+.error-message {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.preconfs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.preconf-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  background-color: #000; /* Black background for the card */
+  color: #fff; /* White text for the card content */
+}
+
+.preconf-card.expanded {
+  background-color: #000; /* Maintain black background when expanded */
+  color: #fff; /* Maintain white text when expanded */
+}
+
+.preconf-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.preconf-left,
+.preconf-right {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preconf-left div,
+.preconf-right div {
+  padding: 8px;
+  background-color: #E97D25; /* Orange background */
+  border-radius: 4px;
+  color: #fff; /* White text */
+  font-weight: bold;
+}
+
+.preconf-left div strong,
+.preconf-right div strong {
+  color: #fff; /* Ensure strong labels are white */
+}
+
+/* New Styles for From Link */
+.from-link {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.from-link:hover {
+  color: #c7a34f; /* A lighter shade of orange for hover */
+}
+
+.preconf-transaction-details {
+  margin-top: 16px;
+  background-color: #000; /* Black background for expanded view */
+  color: #fff; /* White text for readability */
+  padding: 12px;
+  border-radius: 4px;
+  overflow: auto;
+  max-height: 300px;
+}
+
+.preconf-transaction-details pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Pagination Styles */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
+  gap: 8px;
+}
+
+.pagination-button {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  color: #333;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.pagination-button:hover:not(.active):not(:disabled) {
+  background-color: #E97D25; /* Orange background on hover */
+  color: #fff;
+}
+
+.pagination-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination-button.active {
+  background-color: #E97D25; /* Orange background for active page */
+  color: #fff;
+  border-color: #E97D25;
+}
+
+.pagination-button:focus {
+  outline: 2px solid #000;
+}
+
+@media (max-width: 768px) {
+  .preconf-content {
+    flex-direction: column;
+  }
+
+  .preconf-right {
+    margin-top: 12px;
+  }
 }

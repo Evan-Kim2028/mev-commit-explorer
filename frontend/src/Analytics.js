@@ -8,11 +8,11 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from 'recharts';
-import './Aggregations.css'; // Optional: For styling
+import './Analytics.css'; // Optional: For styling
 
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
-function Aggregations() {
+function Analytics() {
   const [aggregations, setAggregations] = useState([]);
   const [groupByField, setGroupByField] = useState('bidder');
   const [loading, setLoading] = useState(true);
@@ -78,4 +78,4 @@ function Aggregations() {
   );
 }
 
-export default Aggregations;
+export default Analytics;
