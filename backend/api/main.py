@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import polars as pl
 from fastapi import FastAPI, HTTPException, Query
 from typing import List, Dict, Any, Optional
@@ -92,20 +93,22 @@ def get_preconfs(
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
 
 
-@app.get("/preconfs/aggregations", response_model=List[AggregationResult])
-def get_preconfs_aggregations(
-    group_by_field: str = Query(
-        ..., description="Field to group by (e.g., 'bidder' or 'inc_block_number')."
+@app.get("/preconfs/bidder-aggregations", response_model=List[AggregationResult])
+def bidderaggregation(
+    bidder: Optional[str] = Query(None, description="Optional filter by bidder."),
+    days: Optional[int] = Query(
+        None, description="Filter by the number of past days (e.g., 1, 7, 30)."
     ),
 ):
     """
-    Get group-by aggregations on preconfs data.
+    Get group-by aggregations on preconfs data for bidders.
 
     Args:
-        group_by_field (str): Field to group the preconfs data by.
+        bidder (Optional[str]): Optional filter by bidder.
+        days (Optional[int]): Optional filter to aggregate data for the past 'n' days.
 
     Returns:
-        List[Dict[str, Any]]: Aggregated results with counts and bid-related calculations.
+        List[AggregationResult]: Aggregated results with counts and bid-related calculations.
 
     Raises:
         HTTPException: If there is an error performing the aggregation, returns a 500 status code.
@@ -113,15 +116,42 @@ def get_preconfs_aggregations(
     try:
         df = load_commitments_df()
 
-        agg_df = df.group_by(group_by_field).agg(
-            [
-                pl.count().alias("preconf_count"),
-                (pl.mean("bid") / 10**18).alias("average_bid"),
-                (pl.sum("bid") / 10**18).alias("total_bid"),
-            ]
+        # Apply bidder filter if provided
+        if bidder:
+            df = df.filter(pl.col("bidder") == bidder)
+
+        # Apply date filter if `days` is provided
+        if days:
+            start_date = datetime.now() - timedelta(days=days)
+            df = df.filter(pl.col("date") >= pl.lit(start_date))
+
+        # Group by date and aggregate
+        agg_df = (
+            df.with_columns(pl.col("date").dt.round("1d"))
+            .group_by("date")
+            .agg(
+                (pl.col("bid_eth").sum().alias("total_bid_eth")),
+                (pl.col("decayed_bid_eth").sum().alias("total_decayed_bid_eth")),
+                (pl.col("commitmentIndex").count().alias("preconf_count")),
+                (pl.col("isSlash").sum().alias("slash_count")),
+            )
+            .sort(by="date")
         )
 
-        result = agg_df.to_dicts()
+        # Convert to AggregationResult structure
+        result = [
+            AggregationResult(
+                preconf_count=row["preconf_count"],
+                average_bid=row["total_bid_eth"] / row["preconf_count"]
+                if row["preconf_count"] > 0
+                else 0,
+                total_bid=row["total_bid_eth"],
+                total_decayed_bid=row["total_decayed_bid_eth"],
+                slash_count=row["slash_count"],
+                group_by_value=row["date"].isoformat(),
+            )
+            for row in agg_df.to_dicts()
+        ]
 
         return result
     except Exception as e:

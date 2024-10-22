@@ -197,27 +197,31 @@ class PreconfsResponse(BaseModel):
 
 class AggregationResult(BaseModel):
     preconf_count: int = Field(
-        ..., description="Total number of preconf commitments.", example=100
+        ..., description="Total number of preconf commitments.", example=89
     )
-    average_bid: float = Field(
-        ..., description="Average bid amount.", example=5000000000.0
+    average_bid: float = Field(..., description="Average bid amount.", example=0.496947)
+    total_bid: float = Field(..., description="Total bid amount.", example=0.7093)
+    total_decayed_bid: float = Field(
+        ..., description="Total decayed bid amount.", example=0.353052
     )
-    total_bid: float = Field(
-        ..., description="Total bid amount.", example=500000000000.0
+    slash_count: int = Field(
+        ..., description="Total number of slash commitments.", example=113
     )
     group_by_value: Union[str, int] = Field(
         ...,
-        description="Value by which the results are grouped.",
-        example="some_group_value",
+        description="Value by which the results are grouped (e.g., date, bidder).",
+        example="2024-08-13",
     )
 
     class Config:
         schema_extra = {
             "example": {
-                "preconf_count": 100,
-                "average_bid": 5000000000.0,
-                "total_bid": 500000000000.0,
-                "group_by_value": "some_group_value",
+                "preconf_count": 89,
+                "average_bid": 0.496947,
+                "total_bid": 0.7093,
+                "total_decayed_bid": 0.353052,
+                "slash_count": 113,
+                "group_by_value": "2024-08-13",
             }
         }
 
