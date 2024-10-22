@@ -7,6 +7,7 @@ import logging
 from typing import Dict, List, Optional
 from db_lock import acquire_lock, release_lock  # Import the locking functions
 from fastapi import HTTPException  # Only import HTTPException for error handling
+from api.utils import byte_to_string
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -27,7 +28,8 @@ def get_db_connection():
 
 def load_commitments_df() -> pl.DataFrame:
     """
-    Load and process the commitments DataFrame.
+    Loads data from encrypted_stores, commits_processed, and commit_stores and joins
+    them together to create a unified view of preconfirmation data.
     """
     # Acquire lock before accessing DuckDB
     lockfile = acquire_lock()
@@ -68,6 +70,45 @@ def load_commitments_df() -> pl.DataFrame:
             .rename(
                 {"blockNumber": "inc_block_number"}  # desired block number for preconf
             )
+            .with_columns(
+                (pl.col("bid") / 10**18).alias("bid_eth"),
+                pl.from_epoch("timestamp", time_unit="ms").alias("date"),
+                pl.col("extra_data_l1")
+                .map_elements(byte_to_string, return_dtype=str)
+                .alias("builder_graffiti"),
+            )
+            # bid decay calculations
+            # the formula to calculate the bid decay = (decayEndTimeStamp - decayStartTimeStamp) / (dispatchTimestamp - decayEndTimeStamp). If it's a negative number, then bid would have decayed to 0
+            .with_columns(
+                # need to change type from uint to int to account for negative numbers
+                pl.col("decayStartTimeStamp").cast(pl.Int64),
+                pl.col("decayEndTimeStamp").cast(pl.Int64),
+                pl.col("dispatchTimestamp").cast(pl.Int64),
+            )
+            .with_columns(
+                (pl.col("decayEndTimeStamp") - pl.col("decayStartTimeStamp")).alias(
+                    "decay_range"
+                ),
+                (pl.col("decayEndTimeStamp") - pl.col("dispatchTimestamp")).alias(
+                    "dispatch_range"
+                ),
+            )
+            .with_columns(
+                (pl.col("dispatch_range") / pl.col("decay_range")).alias(
+                    "decay_multiplier"
+                )
+            )
+            .with_columns(
+                pl.when(pl.col("decay_multiplier") < 0)
+                .then(0)
+                .otherwise(pl.col("decay_multiplier"))
+            )
+            # calculate decayed bid. The decay multiplier is the amount that the bid decays by.
+            .with_columns(
+                (pl.col("decay_multiplier") * pl.col("bid_eth")).alias(
+                    "decayed_bid_eth"
+                )
+            )
         )
 
         # Select desired columns
@@ -104,6 +145,12 @@ def load_commitments_df() -> pl.DataFrame:
             "max_fee_per_gas_l1",
             "effective_gas_price_l1",
             "gas_used_l1",
+            "date",
+            "bid_eth",
+            "decayed_bid_eth",
+            "dispatch_range",
+            "decay_multiplier",
+            "builder_graffiti",
         )
 
         return commitments_df
@@ -116,25 +163,34 @@ def load_commitments_df() -> pl.DataFrame:
 
 
 def get_commitments(
-    bidder: Optional[str] = None,
-    block_number_min: Optional[int] = None,
-    block_number_max: Optional[int] = None,
+    hash: Optional[str] = None,
+    block_number_l1: Optional[int] = None,
 ) -> pl.DataFrame:
     """
-    Retrieve commitments with optional filtering.
+    Retrieve preconf commitments with optional filtering by bidder, block numbers, and hash.
+
+    Args:
+        block_number_min (Optional[int]): Optional filter for minimum block number.
+        block_number_max (Optional[int]): Optional filter for maximum block number.
+        hash (Optional[str]): Optional filter for hash.
+        block_number_l1 (Optional[int]): Optional filter for exact Layer 1 block number.
+
+    Returns:
+        pl.DataFrame: Filtered DataFrame containing commitments.
+
+    Raises:
+        HTTPException: If there is an error retrieving data, returns a 500 status code.
     """
     try:
         df = load_commitments_df()
 
-        # Apply filters if any
-        if bidder:
-            df = df.filter(pl.col("bidder") == bidder)
+        # Apply hash filter
+        if hash:
+            df = df.filter(pl.col("bidHash") == hash)
 
-        if block_number_min is not None:
-            df = df.filter(pl.col("inc_block_number") >= block_number_min)
-
-        if block_number_max is not None:
-            df = df.filter(pl.col("inc_block_number") <= block_number_max)
+        # Apply exact Layer 1 block number filter
+        if block_number_l1 is not None:
+            df = df.filter(pl.col("block_number_l1") == block_number_l1)
 
         return df
     except Exception as e:

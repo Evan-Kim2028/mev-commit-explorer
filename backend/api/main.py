@@ -49,12 +49,9 @@ def get_preconfs(
     limit: int = Query(
         50, ge=1, le=100, description="Limit of items per page (default: 50)."
     ),
-    bidder: Optional[str] = Query(None, description="Filter by bidder address."),
-    block_number_min: Optional[int] = Query(
-        None, description="Minimum block number to filter by."
-    ),
-    block_number_max: Optional[int] = Query(
-        None, description="Maximum block number to filter by."
+    hash: Optional[str] = Query(None, description="Filter by bid mev-commit hash."),
+    block_number_l1: Optional[int] = Query(
+        None, description="Filter by exact Layer 1 block number."
     ),
 ):
     """
@@ -66,6 +63,8 @@ def get_preconfs(
         bidder (Optional[str]): Optional filter for bidder address.
         block_number_min (Optional[int]): Optional filter for minimum block number.
         block_number_max (Optional[int]): Optional filter for maximum block number.
+        hash (Optional[str]): Optional filter for hash.
+        block_number_l1 (Optional[int]): Optional filter for exact Layer 1 block number.
 
     Returns:
         dict: Paginated results with 'page', 'limit', 'total' rows, and the filtered data.
@@ -75,9 +74,8 @@ def get_preconfs(
     """
     try:
         commitments_df = get_commitments(
-            bidder=bidder,
-            block_number_min=block_number_min,
-            block_number_max=block_number_max,
+            hash=hash,
+            block_number_l1=block_number_l1,
         )
 
         total_rows = commitments_df.height
@@ -91,7 +89,7 @@ def get_preconfs(
 
         return {"page": page, "limit": limit, "total": total_rows, "data": result}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
 
 
 @app.get("/preconfs/aggregations", response_model=List[AggregationResult])

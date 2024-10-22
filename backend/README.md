@@ -27,5 +27,5 @@ curl -X GET "http://45.250.253.241:8000/preconfs?page=1" -H 'accept: application
 
 
 curl -X 'GET' \
-  'http://localhost:8000/tables/commit_stores/schema' \
+  'http://localhost:8000/tables/encrypted_stores/schema' \
   -H 'accept: application/json'
