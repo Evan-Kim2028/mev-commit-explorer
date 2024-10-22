@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import polars as pl
 from fastapi import FastAPI, HTTPException, Query
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 from fastapi.middleware.cors import CORSMiddleware
 from api.models import PreconfsResponse, AggregationResult, TableSchemaItem
 
@@ -93,9 +93,14 @@ def get_preconfs(
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
 
 
-@app.get("/preconfs/bidder-aggregations", response_model=List[AggregationResult])
-def bidderaggregation(
-    bidder: Optional[str] = Query(None, description="Optional filter by bidder."),
+@app.get("/preconfs/aggregations", response_model=List[AggregationResult])
+def aggregations(
+    bidder: Optional[Union[List[str], str]] = Query(
+        None, description="Optional filter by bidder(s)."
+    ),
+    provider: Optional[Union[List[str], str]] = Query(
+        None, description="Optional filter by provider(s)."
+    ),
     days: Optional[int] = Query(
         None, description="Filter by the number of past days (e.g., 1, 7, 30)."
     ),
@@ -104,7 +109,8 @@ def bidderaggregation(
     Get group-by aggregations on preconfs data for bidders.
 
     Args:
-        bidder (Optional[str]): Optional filter by bidder.
+        bidder (Optional[Union[List[str], str]]): Optional filter by one or more bidders.
+        provider (Optional[Union[List[str], str]]): Optional filter by one or more providers.
         days (Optional[int]): Optional filter to aggregate data for the past 'n' days.
 
     Returns:
@@ -118,7 +124,17 @@ def bidderaggregation(
 
         # Apply bidder filter if provided
         if bidder:
-            df = df.filter(pl.col("bidder") == bidder)
+            if isinstance(bidder, str):
+                df = df.filter(pl.col("bidder") == bidder)
+            else:
+                df = df.filter(pl.col("bidder").is_in(bidder))
+
+        # Apply provider filter if provided
+        if provider:
+            if isinstance(provider, str):
+                df = df.filter(pl.col("committer") == provider)
+            else:
+                df = df.filter(pl.col("committer").is_in(provider))
 
         # Apply date filter if `days` is provided
         if days:
