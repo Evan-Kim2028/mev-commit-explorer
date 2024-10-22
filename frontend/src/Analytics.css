@@ -1,21 +1,62 @@
 .Analytics {
-    padding: 20px;
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    color: #282c34;
-  }
-  
-  .controls {
-    margin-bottom: 20px;
-  }
-  
-  .controls label {
-    margin-right: 10px;
-    font-weight: bold;
-  }
-  
-  .controls select {
-    padding: 5px;
-    font-size: 16px;
-  }
+  padding: 20px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  color: #ffffff;
+  background-color: #282c34;
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.tabs button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #3a3f4b;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.tabs button.active {
+  background-color: #4a90e2;
+}
+
+.controls {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.controls label {
+  margin-right: 10px;
+  font-weight: bold;
+  color: #a0a0a0;
+}
+
+.controls input[type="text"],
+.controls select {
+  padding: 5px;
+  font-size: 16px;
+  background-color: #3a3f4b;
+  color: #ffffff;
+  border: 1px solid #4a4a4a;
+  margin-right: 15px;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #4a4a4a;
+}
+
+.recharts-text {
+  fill: #a0a0a0;
+}
+
+.recharts-bar-rectangle {
+  fill: #8884d8;
+}
